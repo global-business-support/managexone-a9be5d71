@@ -11,8 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
+import { Route as DashboardIndustriesRouteImport } from './routes/dashboard.industries'
+import { Route as DashboardHrisRouteImport } from './routes/dashboard.hris'
+import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
+import { Route as DashboardCrmRouteImport } from './routes/dashboard.crm'
+import { Route as DashboardComplianceRouteImport } from './routes/dashboard.compliance'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
+import { Route as DashboardAccountingRouteImport } from './routes/dashboard.accounting'
+import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -22,6 +34,11 @@ const SignupRoute = SignupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -34,37 +51,176 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardIndustriesRoute = DashboardIndustriesRouteImport.update({
+  id: '/industries',
+  path: '/industries',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardHrisRoute = DashboardHrisRouteImport.update({
+  id: '/hris',
+  path: '/hris',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDocumentsRoute = DashboardDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCrmRoute = DashboardCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardComplianceRoute = DashboardComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAccountingRoute = DashboardAccountingRouteImport.update({
+  id: '/accounting',
+  path: '/accounting',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminSettingsRoute = DashboardAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/accounting': typeof DashboardAccountingRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/compliance': typeof DashboardComplianceRoute
+  '/dashboard/crm': typeof DashboardCrmRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/hris': typeof DashboardHrisRoute
+  '/dashboard/industries': typeof DashboardIndustriesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/accounting': typeof DashboardAccountingRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/compliance': typeof DashboardComplianceRoute
+  '/dashboard/crm': typeof DashboardCrmRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/hris': typeof DashboardHrisRoute
+  '/dashboard/industries': typeof DashboardIndustriesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard/accounting': typeof DashboardAccountingRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/compliance': typeof DashboardComplianceRoute
+  '/dashboard/crm': typeof DashboardCrmRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/hris': typeof DashboardHrisRoute
+  '/dashboard/industries': typeof DashboardIndustriesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/checkout' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/checkout'
+    | '/dashboard'
+    | '/login'
+    | '/signup'
+    | '/dashboard/accounting'
+    | '/dashboard/admin'
+    | '/dashboard/billing'
+    | '/dashboard/compliance'
+    | '/dashboard/crm'
+    | '/dashboard/documents'
+    | '/dashboard/hris'
+    | '/dashboard/industries'
+    | '/dashboard/reports'
+    | '/dashboard/'
+    | '/dashboard/admin/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout' | '/login' | '/signup'
-  id: '__root__' | '/' | '/checkout' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/checkout'
+    | '/login'
+    | '/signup'
+    | '/dashboard/accounting'
+    | '/dashboard/admin'
+    | '/dashboard/billing'
+    | '/dashboard/compliance'
+    | '/dashboard/crm'
+    | '/dashboard/documents'
+    | '/dashboard/hris'
+    | '/dashboard/industries'
+    | '/dashboard/reports'
+    | '/dashboard'
+    | '/dashboard/admin/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/checkout'
+    | '/dashboard'
+    | '/login'
+    | '/signup'
+    | '/dashboard/accounting'
+    | '/dashboard/admin'
+    | '/dashboard/billing'
+    | '/dashboard/compliance'
+    | '/dashboard/crm'
+    | '/dashboard/documents'
+    | '/dashboard/hris'
+    | '/dashboard/industries'
+    | '/dashboard/reports'
+    | '/dashboard/'
+    | '/dashboard/admin/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckoutRoute: typeof CheckoutRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -85,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -99,12 +262,132 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reports': {
+      id: '/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/industries': {
+      id: '/dashboard/industries'
+      path: '/industries'
+      fullPath: '/dashboard/industries'
+      preLoaderRoute: typeof DashboardIndustriesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/hris': {
+      id: '/dashboard/hris'
+      path: '/hris'
+      fullPath: '/dashboard/hris'
+      preLoaderRoute: typeof DashboardHrisRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/documents': {
+      id: '/dashboard/documents'
+      path: '/documents'
+      fullPath: '/dashboard/documents'
+      preLoaderRoute: typeof DashboardDocumentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/crm': {
+      id: '/dashboard/crm'
+      path: '/crm'
+      fullPath: '/dashboard/crm'
+      preLoaderRoute: typeof DashboardCrmRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/compliance': {
+      id: '/dashboard/compliance'
+      path: '/compliance'
+      fullPath: '/dashboard/compliance'
+      preLoaderRoute: typeof DashboardComplianceRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/accounting': {
+      id: '/dashboard/accounting'
+      path: '/accounting'
+      fullPath: '/dashboard/accounting'
+      preLoaderRoute: typeof DashboardAccountingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/settings': {
+      id: '/dashboard/admin/settings'
+      path: '/settings'
+      fullPath: '/dashboard/admin/settings'
+      preLoaderRoute: typeof DashboardAdminSettingsRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
   }
 }
+
+interface DashboardAdminRouteChildren {
+  DashboardAdminSettingsRoute: typeof DashboardAdminSettingsRoute
+}
+
+const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
+  DashboardAdminSettingsRoute: DashboardAdminSettingsRoute,
+}
+
+const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
+  DashboardAdminRouteChildren,
+)
+
+interface DashboardRouteChildren {
+  DashboardAccountingRoute: typeof DashboardAccountingRoute
+  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
+  DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardComplianceRoute: typeof DashboardComplianceRoute
+  DashboardCrmRoute: typeof DashboardCrmRoute
+  DashboardDocumentsRoute: typeof DashboardDocumentsRoute
+  DashboardHrisRoute: typeof DashboardHrisRoute
+  DashboardIndustriesRoute: typeof DashboardIndustriesRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAccountingRoute: DashboardAccountingRoute,
+  DashboardAdminRoute: DashboardAdminRouteWithChildren,
+  DashboardBillingRoute: DashboardBillingRoute,
+  DashboardComplianceRoute: DashboardComplianceRoute,
+  DashboardCrmRoute: DashboardCrmRoute,
+  DashboardDocumentsRoute: DashboardDocumentsRoute,
+  DashboardHrisRoute: DashboardHrisRoute,
+  DashboardIndustriesRoute: DashboardIndustriesRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }

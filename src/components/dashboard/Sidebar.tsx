@@ -7,7 +7,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: typeof Users; exact?: boolean };
+const NAV: NavItem[] = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/hris", label: "HRIS & Payroll", icon: Users },
   { to: "/dashboard/accounting", label: "Accounting", icon: Calculator },
@@ -17,7 +18,7 @@ const NAV = [
   { to: "/dashboard/industries", label: "Industries", icon: Building2 },
   { to: "/dashboard/reports", label: "P&L / Balance Sheet", icon: BarChart3 },
   { to: "/dashboard/documents", label: "Documents", icon: FileText },
-] as const;
+];
 
 export function Sidebar() {
   const loc = useLocation();
