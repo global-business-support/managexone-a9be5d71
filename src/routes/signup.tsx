@@ -33,8 +33,11 @@ function SignupPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created! Check your email to verify.");
-    navigate({ to: "/login" });
+    toast.success("Account created! Signing you in…");
+    // Try immediate sign-in so user lands in dashboard right away
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) navigate({ to: "/login" });
+    else navigate({ to: "/dashboard" });
   };
 
   return (
