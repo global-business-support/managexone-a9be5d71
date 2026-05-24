@@ -1,4 +1,5 @@
-import { Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
 export function Footer() {
   return (
