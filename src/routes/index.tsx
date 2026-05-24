@@ -27,6 +27,7 @@ function LandingPage() {
       <Navbar />
       <main>
         <Hero />
+        <QuickAccess />
         <Modules />
         <Compliance />
         <Industries />
