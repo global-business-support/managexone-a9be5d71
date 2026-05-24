@@ -84,6 +84,95 @@ function AdminPage() {
 
   if (loading || !isAdmin) return null;
 
+  const pending = users.filter((u) => !u.approved);
+  const all = users;
+
+  const renderTable = (rows: UserRow[], emptyMsg: string) => (
+    <Card className="overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Company</th>
+              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Joined</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map((u) => (
+              <tr key={u.user_id} className="hover:bg-muted/30">
+                <td className="px-4 py-3">
+                  <div className="font-medium text-foreground">{u.full_name ?? "—"}</div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Mail className="h-3 w-3" /> {u.email}
+                  </div>
+                  {u.phone && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3" /> {u.phone}
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> {u.company_name ?? "—"}</span>
+                </td>
+                <td className="px-4 py-3">
+                  <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">
+                    {u.role ?? "—"}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  {u.approved ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-700">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Approved
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
+                      <Clock className="h-3.5 w-3.5" /> Awaiting Approval
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {new Date(u.created_at).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2">
+                    {!u.approved ? (
+                      <>
+                        <Button size="sm" onClick={() => approve(u)} className="bg-emerald-600 hover:bg-emerald-700">
+                          <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Approve
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => revoke(u)}>
+                          <XCircle className="mr-1 h-3.5 w-3.5" /> Reject
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => revoke(u)}>Revoke</Button>
+                    )}
+                    {u.role !== "admin" && (
+                      <Button size="sm" variant="outline" onClick={() => makeAdmin(u)}>
+                        <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Make Admin
+                      </Button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                  {emptyMsg}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between border-b pb-5">
@@ -93,7 +182,7 @@ function AdminPage() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-navy-deep">User Approvals</h1>
-            <p className="text-sm text-muted-foreground">Approve trial users to unlock full access.</p>
+            <p className="text-sm text-muted-foreground">Review pending requests and manage access.</p>
           </div>
         </div>
         <Button variant="outline" onClick={load} disabled={busy}>
@@ -101,75 +190,38 @@ function AdminPage() {
         </Button>
       </header>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">User</th>
-                <th className="px-4 py-3">Company</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Joined</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {users.map((u) => (
-                <tr key={u.user_id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-foreground">{u.full_name ?? "—"}</div>
-                    <div className="text-xs text-muted-foreground">{u.email}</div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.company_name ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">
-                      {u.role ?? "—"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    {u.approved ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Approved
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-amber-700">
-                        <XCircle className="h-3.5 w-3.5" /> Pending
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {new Date(u.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      {!u.approved ? (
-                        <Button size="sm" onClick={() => approve(u)} className="bg-emerald-600 hover:bg-emerald-700">
-                          Approve
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" onClick={() => revoke(u)}>Revoke</Button>
-                      )}
-                      {u.role !== "admin" && (
-                        <Button size="sm" variant="outline" onClick={() => makeAdmin(u)}>
-                          <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Make Admin
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                    No users yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Pending Requests</div>
+          <div className="mt-1 font-display text-2xl font-bold text-amber-700">{pending.length}</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Approved Members</div>
+          <div className="mt-1 font-display text-2xl font-bold text-emerald-700">{users.filter((u) => u.approved).length}</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Total Signups</div>
+          <div className="mt-1 font-display text-2xl font-bold text-navy-deep">{users.length}</div>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="pending" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="pending">
+            Pending Requests
+            {pending.length > 0 && (
+              <Badge className="ml-2 bg-amber-500 text-white hover:bg-amber-500">{pending.length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="all">All Users</TabsTrigger>
+        </TabsList>
+        <TabsContent value="pending">
+          {renderTable(pending, "No pending requests. All caught up!")}
+        </TabsContent>
+        <TabsContent value="all">
+          {renderTable(all, "No users yet.")}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
