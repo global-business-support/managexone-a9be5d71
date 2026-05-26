@@ -14,8 +14,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
 import { Route as DashboardIndustriesRouteImport } from './routes/dashboard.industries'
 import { Route as DashboardHrisRouteImport } from './routes/dashboard.hris'
@@ -25,6 +27,9 @@ import { Route as DashboardComplianceRouteImport } from './routes/dashboard.comp
 import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardAccountingRouteImport } from './routes/dashboard.accounting'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminPendingRouteImport } from './routes/admin.pending'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
 
 const SignupRoute = SignupRouteImport.update({
@@ -52,6 +57,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin-login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,6 +71,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const DashboardReportsRoute = DashboardReportsRouteImport.update({
   id: '/reports',
@@ -107,6 +122,21 @@ const DashboardAccountingRoute = DashboardAccountingRouteImport.update({
   path: '/accounting',
   getParentRoute: () => DashboardRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPendingRoute = AdminPendingRouteImport.update({
+  id: '/pending',
+  path: '/pending',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const DashboardAdminSettingsRoute = DashboardAdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -115,11 +145,15 @@ const DashboardAdminSettingsRoute = DashboardAdminSettingsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pending': typeof AdminPendingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -129,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/hris': typeof DashboardHrisRoute
   '/dashboard/industries': typeof DashboardIndustriesRoute
   '/dashboard/reports': typeof DashboardReportsRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
@@ -138,6 +173,9 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pending': typeof AdminPendingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -147,17 +185,22 @@ export interface FileRoutesByTo {
   '/dashboard/hris': typeof DashboardHrisRoute
   '/dashboard/industries': typeof DashboardIndustriesRoute
   '/dashboard/reports': typeof DashboardReportsRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pending': typeof AdminPendingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -167,6 +210,7 @@ export interface FileRoutesById {
   '/dashboard/hris': typeof DashboardHrisRoute
   '/dashboard/industries': typeof DashboardIndustriesRoute
   '/dashboard/reports': typeof DashboardReportsRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
 }
@@ -174,11 +218,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/admin-login'
     | '/checkout'
     | '/dashboard'
     | '/login'
     | '/signup'
+    | '/admin/payments'
+    | '/admin/pending'
+    | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
     | '/dashboard/billing'
@@ -188,6 +236,7 @@ export interface FileRouteTypes {
     | '/dashboard/hris'
     | '/dashboard/industries'
     | '/dashboard/reports'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/admin/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +246,9 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/signup'
+    | '/admin/payments'
+    | '/admin/pending'
+    | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
     | '/dashboard/billing'
@@ -206,16 +258,21 @@ export interface FileRouteTypes {
     | '/dashboard/hris'
     | '/dashboard/industries'
     | '/dashboard/reports'
+    | '/admin'
     | '/dashboard'
     | '/dashboard/admin/settings'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/admin-login'
     | '/checkout'
     | '/dashboard'
     | '/login'
     | '/signup'
+    | '/admin/payments'
+    | '/admin/pending'
+    | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
     | '/dashboard/billing'
@@ -225,12 +282,14 @@ export interface FileRouteTypes {
     | '/dashboard/hris'
     | '/dashboard/industries'
     | '/dashboard/reports'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/admin/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRouteWithChildren
@@ -275,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -288,6 +354,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/dashboard/reports': {
       id: '/dashboard/reports'
@@ -352,6 +425,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAccountingRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/pending': {
+      id: '/admin/pending'
+      path: '/pending'
+      fullPath: '/admin/pending'
+      preLoaderRoute: typeof AdminPendingRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/dashboard/admin/settings': {
       id: '/dashboard/admin/settings'
       path: '/settings'
@@ -361,6 +455,22 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPendingRoute: typeof AdminPendingRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPendingRoute: AdminPendingRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface DashboardAdminRouteChildren {
   DashboardAdminSettingsRoute: typeof DashboardAdminSettingsRoute
@@ -406,6 +516,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRouteWithChildren,

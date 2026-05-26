@@ -65,6 +65,63 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          billing_cycle: string
+          company_name: string | null
+          created_at: string
+          currency: string
+          email: string
+          full_name: string | null
+          gstin: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          plan: string
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_cycle: string
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          full_name?: string | null
+          gstin?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          plan: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: string
+          company_name?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          full_name?: string | null
+          gstin?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          plan?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approved: boolean
@@ -73,6 +130,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          payment_status: string
           phone: string | null
           trial_expires_at: string
           updated_at: string
@@ -85,6 +143,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id?: string
+          payment_status?: string
           phone?: string | null
           trial_expires_at?: string
           updated_at?: string
@@ -97,6 +156,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          payment_status?: string
           phone?: string | null
           trial_expires_at?: string
           updated_at?: string

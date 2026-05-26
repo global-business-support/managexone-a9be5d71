@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Sparkles, Check, ShieldCheck, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({
   plan: z.enum(["starter", "professional"]).default("starter"),
@@ -43,12 +44,33 @@ function CheckoutPage() {
       return;
     }
     setLoading(true);
-    // PhonePe integration placeholder — backend not yet connected.
-    setTimeout(() => {
+    const { data: sess } = await supabase.auth.getSession();
+    const uid = sess.session?.user.id;
+    if (!uid) {
       setLoading(false);
-      toast.success("Redirecting to PhonePe…");
-      // window.location.href = phonePeRedirectUrl;
-    }, 900);
+      toast.error("Please sign in / sign up first to complete payment.");
+      return;
+    }
+    const { error } = await supabase.from("payments").insert({
+      user_id: uid,
+      email: form.email,
+      full_name: form.name,
+      phone: form.phone,
+      company_name: form.company || null,
+      plan,
+      billing_cycle: billing,
+      amount: total,
+      currency: "INR",
+      status: "pending",
+      gstin: form.gstin || null,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Payment recorded — awaiting admin approval after PhonePe confirmation.");
+    // window.location.href = phonePeRedirectUrl;
   };
 
   return (

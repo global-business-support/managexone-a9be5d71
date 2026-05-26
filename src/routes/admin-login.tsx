@@ -48,7 +48,7 @@ function AdminLoginPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Admin session active");
-    navigate({ to: "/dashboard" });
+    navigate({ to: "/admin" });
   };
 
   return (
