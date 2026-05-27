@@ -21,9 +21,31 @@ function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+
+    // Block admin from signing in via the user portal
+    const uid = data.user?.id;
+    let isAdmin = false;
+    if (uid) {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid);
+      isAdmin = (roles ?? []).some((r: { role: string }) => r.role === "admin");
+    }
     setLoading(false);
-    if (error) return toast.error(error.message);
+
+    if (isAdmin) {
+      await supabase.auth.signOut();
+      toast.error("Admin accounts must sign in via the Admin portal.");
+      navigate({ to: "/admin-login" });
+      return;
+    }
+
     toast.success("Welcome back!");
     navigate({ to: "/dashboard" });
   };

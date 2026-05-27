@@ -13,12 +13,14 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [loading, user, navigate]);
+    if (loading) return;
+    if (!user) navigate({ to: "/login" });
+    else if (isAdmin) navigate({ to: "/admin" });
+  }, [loading, user, isAdmin, navigate]);
 
   if (loading) {
     return (
