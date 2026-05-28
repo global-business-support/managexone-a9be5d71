@@ -25,30 +25,44 @@ function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    let { error } = await supabase.auth.signInWithPassword({ email, password });
+    let { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    // First-time bootstrap: if admin doesn't exist yet, create it.
     if (error && email.toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       const { error: signUpErr } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/admin`,
           data: { full_name: "Administrator", company_name: "ManageXOne" },
         },
       });
       if (!signUpErr) {
         const retry = await supabase.auth.signInWithPassword({ email, password });
         error = retry.error;
+        signInData = retry.data;
       } else if (!/already/i.test(signUpErr.message)) {
         error = signUpErr;
       }
     }
 
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+
+    // Verify admin role before navigating — prevents racing with profile load
+    const uid = signInData?.user?.id;
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid!);
+    const isAdmin = (roles ?? []).some((r: { role: string }) => r.role === "admin");
     setLoading(false);
-    if (error) return toast.error(error.message);
+
+    if (!isAdmin) {
+      await supabase.auth.signOut();
+      return toast.error("Yeh account admin nahi hai.");
+    }
+
     toast.success("Admin session active");
-    navigate({ to: "/admin" });
+    window.location.assign("/admin");
   };
 
   return (
