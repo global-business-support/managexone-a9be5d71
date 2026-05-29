@@ -26,20 +26,13 @@ function AdminLoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     if (mode === "request") {
-      let authUserId: string | undefined;
-
       const signUpRes = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/admin-login`,
-          data: {
-            full_name: fullName,
-            company_name: companyName,
-            phone,
-          },
+          data: { full_name: fullName, company_name: companyName, phone },
         },
       });
 
@@ -48,41 +41,30 @@ function AdminLoginPage() {
         return toast.error(signUpRes.error.message);
       }
 
-      authUserId = signUpRes.data.user?.id;
-
-      if (!authUserId) {
+      // Ensure an active session (handles both new signup and existing account)
+      let session = signUpRes.data.session;
+      if (!session) {
         const signInRes = await supabase.auth.signInWithPassword({ email, password });
         if (signInRes.error) {
           setLoading(false);
           return toast.error(signInRes.error.message);
         }
-        authUserId = signInRes.data.user?.id;
+        session = signInRes.data.session;
       }
 
-      const { error: requestError } = await supabase.from("admin_requests").insert({
-        user_id: authUserId!,
-        requester_email: email,
-        full_name: fullName,
-        company_name: companyName,
-        phone,
-        reason,
-      });
+      // Instantly grant admin role — no email approval required
+      const { error: rpcError } = await supabase.rpc("self_register_admin");
+      if (rpcError) {
+        setLoading(false);
+        return toast.error(rpcError.message);
+      }
 
       setLoading(false);
-
-      if (requestError && !/duplicate key|unique/i.test(requestError.message)) {
-        return toast.error(requestError.message);
-      }
-
-      const subject = encodeURIComponent(`Admin access request - ${fullName || email}`);
-      const body = encodeURIComponent(
-        `New admin access request received.%0D%0A%0D%0AName: ${fullName || "-"}%0D%0AEmail: ${email}%0D%0ACompany: ${companyName || "-"}%0D%0APhone: ${phone || "-"}%0D%0AReason: ${reason || "-"}%0D%0A%0D%0APlease review this request inside ManageXOne admin panel.`
-      );
-
-      window.location.href = `mailto:jeet0731@gmail.com?subject=${subject}&body=${body}`;
-      toast.success("Admin request submit ho gayi. Approval ke baad hi admin access milega.");
+      toast.success("Admin account ready. Redirecting...");
+      window.location.assign("/admin");
       return;
     }
+
 
     const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
