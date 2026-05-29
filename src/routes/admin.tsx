@@ -1,14 +1,9 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/admin-login" });
-  },
   component: AdminLayout,
 });
 
@@ -18,8 +13,8 @@ function AdminLayout() {
 
   useEffect(() => {
     if (!loading) {
-      if (!user) navigate({ to: "/admin-login" });
-      else if (!isAdmin) navigate({ to: "/dashboard" });
+      if (!user) navigate({ to: "/admin-login", replace: true });
+      else if (!isAdmin) navigate({ to: "/dashboard", replace: true });
     }
   }, [loading, user, isAdmin, navigate]);
 

@@ -1,11 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ShieldCheck, Sparkles } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const ADMIN_EMAIL = "jeet0731@gmail.com";
 
@@ -15,9 +16,17 @@ export const Route = createFileRoute("/admin-login")({
 });
 
 function AdminLoginPage() {
+  const navigate = useNavigate();
+  const { refresh, loading: authLoading, isAdmin, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user?.email?.toLowerCase() === ADMIN_EMAIL && isAdmin) {
+      navigate({ to: "/admin", replace: true });
+    }
+  }, [authLoading, isAdmin, navigate, user]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,22 +43,23 @@ function AdminLoginPage() {
     });
     if (error) {
       setLoading(false);
-      return toast.error(error.message);
+      return toast.error("Admin login failed. Please retry with the authorized account.");
     }
 
     const uid = signInData?.user?.id;
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid!);
     const isAdmin = (roles ?? []).some((r: { role: string }) => r.role === "admin");
 
-    setLoading(false);
-
     if (!isAdmin) {
+      setLoading(false);
       await supabase.auth.signOut();
       return toast.error("This account does not have admin access.");
     }
 
+    await refresh();
+    setLoading(false);
     toast.success("Admin session active");
-    window.location.assign("/admin");
+    navigate({ to: "/admin", replace: true });
   };
 
   return (
