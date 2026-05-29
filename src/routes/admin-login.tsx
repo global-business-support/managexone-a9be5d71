@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,15 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ShieldCheck, Sparkles } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const ADMIN_EMAIL = "jeet0731@gmail.com";
 
 export const Route = createFileRoute("/admin-login")({
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data.user?.email?.toLowerCase() === ADMIN_EMAIL) {
+      throw redirect({ to: "/admin" });
+    }
+  },
   head: () => ({ meta: [{ title: "Admin Sign In — ManageXOne" }] }),
   component: AdminLoginPage,
 });
 
 function AdminLoginPage() {
+  const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,15 +50,16 @@ function AdminLoginPage() {
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid!);
     const isAdmin = (roles ?? []).some((r: { role: string }) => r.role === "admin");
 
-    setLoading(false);
-
     if (!isAdmin) {
+      setLoading(false);
       await supabase.auth.signOut();
       return toast.error("This account does not have admin access.");
     }
 
+    await refresh();
+    setLoading(false);
     toast.success("Admin session active");
-    window.location.assign("/admin");
+    navigate({ to: "/admin", replace: true });
   };
 
   return (
