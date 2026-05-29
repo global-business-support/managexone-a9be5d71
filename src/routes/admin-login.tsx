@@ -1,5 +1,5 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,22 +11,22 @@ import { useAuth } from "@/hooks/use-auth";
 const ADMIN_EMAIL = "jeet0731@gmail.com";
 
 export const Route = createFileRoute("/admin-login")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (data.user?.email?.toLowerCase() === ADMIN_EMAIL) {
-      throw redirect({ to: "/admin" });
-    }
-  },
   head: () => ({ meta: [{ title: "Admin Sign In — ManageXOne" }] }),
   component: AdminLoginPage,
 });
 
 function AdminLoginPage() {
   const navigate = useNavigate();
-  const { refresh } = useAuth();
+  const { refresh, loading: authLoading, isAdmin, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user?.email?.toLowerCase() === ADMIN_EMAIL && isAdmin) {
+      navigate({ to: "/admin", replace: true });
+    }
+  }, [authLoading, isAdmin, navigate, user]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
