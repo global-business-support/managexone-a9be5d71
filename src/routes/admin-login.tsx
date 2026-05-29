@@ -43,7 +43,7 @@ function AdminLoginPage() {
     });
     if (error) {
       setLoading(false);
-      return toast.error(error.message);
+      return toast.error("Admin login failed. Please retry with the authorized account.");
     }
 
     const uid = signInData?.user?.id;
