@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Users, CheckCircle2, XCircle, ShieldCheck, RefreshCw, Mail, Phone, Building2, Search, Clock } from "lucide-react";
+import { Users, CheckCircle2, XCircle, ShieldCheck, RefreshCw, Mail, Phone, Building2, Search, Clock, Power } from "lucide-react";
 
 export const Route = createFileRoute("/admin/users")({
   component: AllUsersPage,
@@ -19,6 +20,7 @@ interface UserRow {
   company_name: string | null;
   phone: string | null;
   approved: boolean;
+  active: boolean;
   payment_status: string;
   trial_expires_at: string;
   created_at: string;
@@ -75,6 +77,13 @@ function AllUsersPage() {
     if (error) return toast.error(error.message);
     await supabase.from("profiles").update({ approved: true }).eq("user_id", u.user_id);
     toast.success(`${u.email} promoted to admin`);
+    load();
+  };
+
+  const toggleActive = async (u: UserRow, next: boolean) => {
+    const { error } = await supabase.from("profiles").update({ active: next }).eq("user_id", u.user_id);
+    if (error) return toast.error(error.message);
+    toast.success(next ? `${u.email} activated` : `${u.email} deactivated — dashboard access blocked`);
     load();
   };
 
