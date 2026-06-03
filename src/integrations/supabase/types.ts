@@ -464,11 +464,14 @@ export type Database = {
           gstin: string | null
           id: string
           notes: string | null
+          payment_method: string | null
           phone: string | null
           plan: string
+          screenshot_url: string | null
           status: string
           transaction_id: string | null
           updated_at: string
+          upi_ref: string | null
           user_id: string
         }
         Insert: {
@@ -482,11 +485,14 @@ export type Database = {
           gstin?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string | null
           phone?: string | null
           plan: string
+          screenshot_url?: string | null
           status?: string
           transaction_id?: string | null
           updated_at?: string
+          upi_ref?: string | null
           user_id: string
         }
         Update: {
@@ -500,11 +506,14 @@ export type Database = {
           gstin?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string | null
           phone?: string | null
           plan?: string
+          screenshot_url?: string | null
           status?: string
           transaction_id?: string | null
           updated_at?: string
+          upi_ref?: string | null
           user_id?: string
         }
         Relationships: []
@@ -570,6 +579,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active: boolean
           approved: boolean
           company_name: string | null
           created_at: string
@@ -583,6 +593,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          active?: boolean
           approved?: boolean
           company_name?: string | null
           created_at?: string
@@ -596,6 +607,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          active?: boolean
           approved?: boolean
           company_name?: string | null
           created_at?: string
