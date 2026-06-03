@@ -140,13 +140,14 @@ function AllUsersPage() {
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Active</th>
                 <th className="px-4 py-3">Joined</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {filtered.map((u) => (
-                <tr key={u.user_id} className="hover:bg-muted/30">
+                <tr key={u.user_id} className={`hover:bg-muted/30 ${!u.active ? "bg-rose-50/40" : ""}`}>
                   <td className="px-4 py-3">
                     <div className="font-medium text-foreground">{u.full_name ?? "—"}</div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground"><Mail className="h-3 w-3" /> {u.email}</div>
@@ -170,9 +171,17 @@ function AllUsersPage() {
                       <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-amber-800"><Clock className="h-3.5 w-3.5" /> Pending</span>
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={u.active} onCheckedChange={(v) => toggleActive(u, v)} disabled={u.role === "admin"} />
+                      <span className={`text-xs font-medium ${u.active ? "text-emerald-700" : "text-rose-700"}`}>
+                        {u.active ? "Active" : "Suspended"}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                       {!u.approved ? (
                         <>
                           <Button size="sm" onClick={() => approve(u)} className="bg-emerald-600 hover:bg-emerald-700">
@@ -185,6 +194,16 @@ function AllUsersPage() {
                       ) : (
                         <Button size="sm" variant="outline" onClick={() => decline(u)}>Revoke</Button>
                       )}
+                      {u.role !== "admin" && u.active && (
+                        <Button size="sm" variant="outline" onClick={() => toggleActive(u, false)} className="border-rose-300 text-rose-700 hover:bg-rose-50">
+                          <Power className="mr-1 h-3.5 w-3.5" /> Deactivate
+                        </Button>
+                      )}
+                      {u.role !== "admin" && !u.active && (
+                        <Button size="sm" variant="outline" onClick={() => toggleActive(u, true)} className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                          <Power className="mr-1 h-3.5 w-3.5" /> Activate
+                        </Button>
+                      )}
                       {u.role !== "admin" && (
                         <Button size="sm" variant="outline" onClick={() => makeAdmin(u)}>
                           <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Make Admin
@@ -195,7 +214,7 @@ function AllUsersPage() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No users match.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">No users match.</td></tr>
               )}
             </tbody>
           </table>
