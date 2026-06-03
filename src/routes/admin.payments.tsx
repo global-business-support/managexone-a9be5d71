@@ -23,6 +23,9 @@ interface PaymentRow {
   currency: string;
   status: string;
   transaction_id: string | null;
+  upi_ref: string | null;
+  payment_method: string | null;
+  screenshot_url: string | null;
   gstin: string | null;
   created_at: string;
 }
@@ -45,10 +48,19 @@ function PaymentsPage() {
     const { error } = await supabase.from("payments").update({ status }).eq("id", p.id);
     if (error) return toast.error(error.message);
     if (status === "paid") {
-      await supabase.from("profiles").update({ payment_status: "paid" }).eq("user_id", p.user_id);
+      await supabase.from("profiles").update({ payment_status: "paid", approved: true, active: true }).eq("user_id", p.user_id);
+      // Promote trial to member
+      await supabase.from("user_roles").delete().eq("user_id", p.user_id).eq("role", "trial");
+      await supabase.from("user_roles").insert({ user_id: p.user_id, role: "member" });
     }
     toast.success(`Payment marked ${status}`);
     load();
+  };
+
+  const viewScreenshot = async (path: string) => {
+    const { data, error } = await supabase.storage.from("payment-screenshots").createSignedUrl(path, 300);
+    if (error || !data) return toast.error("Could not load screenshot");
+    window.open(data.signedUrl, "_blank");
   };
 
   const totalRevenue = rows.filter((r) => r.status === "paid").reduce((a, b) => a + Number(b.amount), 0);
@@ -84,7 +96,9 @@ function PaymentsPage() {
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Plan</th>
                 <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Txn ID</th>
+                <th className="px-4 py-3">Method</th>
+                <th className="px-4 py-3">UPI Ref / Txn ID</th>
+                <th className="px-4 py-3">Proof</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -103,7 +117,19 @@ function PaymentsPage() {
                     <div className="text-xs text-muted-foreground">{p.billing_cycle}</div>
                   </td>
                   <td className="px-4 py-3 font-semibold">₹ {Number(p.amount).toLocaleString("en-IN")}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{p.transaction_id ?? "—"}</td>
+                  <td className="px-4 py-3 text-xs capitalize">
+                    <span className="rounded-md bg-muted px-2 py-1 font-medium">{p.payment_method ?? "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs">{p.upi_ref ?? p.transaction_id ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    {p.screenshot_url ? (
+                      <Button size="sm" variant="outline" onClick={() => viewScreenshot(p.screenshot_url!)}>
+                        View
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${
                       p.status === "paid" ? "bg-emerald-100 text-emerald-800"
@@ -117,12 +143,12 @@ function PaymentsPage() {
                     <div className="flex justify-end gap-2">
                       {p.status !== "paid" && (
                         <Button size="sm" onClick={() => mark(p, "paid")} className="bg-emerald-600 hover:bg-emerald-700">
-                          <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Mark Paid
+                          <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Approve & Unlock
                         </Button>
                       )}
                       {p.status !== "failed" && (
                         <Button size="sm" variant="outline" onClick={() => mark(p, "failed")}>
-                          <XCircle className="mr-1 h-3.5 w-3.5" /> Fail
+                          <XCircle className="mr-1 h-3.5 w-3.5" /> Reject
                         </Button>
                       )}
                     </div>
@@ -130,7 +156,7 @@ function PaymentsPage() {
                 </tr>
               ))}
               {rows.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No payments yet.</td></tr>
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">No payments yet.</td></tr>
               )}
             </tbody>
           </table>
