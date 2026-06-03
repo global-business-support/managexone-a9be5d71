@@ -4,8 +4,9 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Sparkles, Check, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Sparkles, Check, ShieldCheck, ArrowLeft, Upload, Copy, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({
@@ -25,6 +26,16 @@ const PLANS: Record<"starter" | "professional", PlanDef> = {
   professional: { name: "Professional", monthly: 5999, features: ["5 Companies", "Up to 100 Employees", "EPFO + ESIC + TDS", "P&L + Balance Sheet"] },
 };
 
+const UPI_ID = "managexone@upi";
+const UPI_NAME = "ManageXOne";
+
+const PAYMENT_METHODS = [
+  { id: "phonepe", label: "PhonePe", color: "bg-[#5f259f]", short: "Pe" },
+  { id: "gpay", label: "Google Pay", color: "bg-[#1a73e8]", short: "G" },
+  { id: "paytm", label: "Paytm", color: "bg-[#00baf2]", short: "P" },
+  { id: "bhim", label: "BHIM / Other UPI", color: "bg-[#00833e]", short: "₹" },
+] as const;
+
 const inr = (n: number) => `₹ ${n.toLocaleString("en-IN")}`;
 
 function CheckoutPage() {
@@ -35,22 +46,41 @@ function CheckoutPage() {
   const total = baseTotal + gst;
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", gstin: "" });
+  const [method, setMethod] = useState<string>("phonepe");
+  const [txnId, setTxnId] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${total}&cu=INR&tn=${encodeURIComponent(`ManageXOne ${p.name}`)}`;
+
+  const copyUpi = async () => {
+    await navigator.clipboard.writeText(UPI_ID);
+    toast.success("UPI ID copied");
+  };
 
   const onPay = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.phone) {
-      toast.error("Please fill name, email and phone.");
-      return;
-    }
+    if (!form.name || !form.email || !form.phone) return toast.error("Please fill name, email and phone.");
+    if (!txnId.trim()) return toast.error("Enter the UPI transaction / reference ID.");
+    if (!screenshot) return toast.error("Please upload the payment screenshot.");
+
     setLoading(true);
     const { data: sess } = await supabase.auth.getSession();
     const uid = sess.session?.user.id;
     if (!uid) {
       setLoading(false);
-      toast.error("Please sign in / sign up first to complete payment.");
-      return;
+      return toast.error("Please sign in / sign up first to complete payment.");
     }
+
+    // Upload screenshot
+    const ext = screenshot.name.split(".").pop() || "jpg";
+    const path = `${uid}/${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("payment-screenshots").upload(path, screenshot, { upsert: false });
+    if (upErr) {
+      setLoading(false);
+      return toast.error(`Upload failed: ${upErr.message}`);
+    }
+
     const { error } = await supabase.from("payments").insert({
       user_id: uid,
       email: form.email,
@@ -63,14 +93,16 @@ function CheckoutPage() {
       currency: "INR",
       status: "pending",
       gstin: form.gstin || null,
+      payment_method: method,
+      upi_ref: txnId.trim(),
+      transaction_id: txnId.trim(),
+      screenshot_url: path,
     });
     setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Payment recorded — awaiting admin approval after PhonePe confirmation.");
-    // window.location.href = phonePeRedirectUrl;
+    if (error) return toast.error(error.message);
+    toast.success("Payment submitted! Admin will verify and unlock access shortly.");
+    setTxnId("");
+    setScreenshot(null);
   };
 
   return (
@@ -92,9 +124,9 @@ function CheckoutPage() {
       <div className="container mx-auto grid gap-8 px-4 py-12 lg:grid-cols-[1.2fr_1fr]">
         <div>
           <h1 className="font-display text-3xl font-bold text-navy-deep">Complete Your Purchase</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Secure checkout · Pay with PhonePe (UPI, Cards, Net Banking, Wallets)</p>
+          <p className="mt-1 text-sm text-muted-foreground">UPI checkout — pay from any phone app, then upload screenshot for instant verification.</p>
 
-          <form onSubmit={onPay} className="mt-8 space-y-5 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <form onSubmit={onPay} className="mt-8 space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name *</Label>
@@ -119,22 +151,72 @@ function CheckoutPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-muted/40 p-4">
-              <div className="mb-3 text-sm font-semibold text-navy-deep">Payment Method</div>
-              <div className="flex items-center gap-3 rounded-lg border-2 border-accent bg-background p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#5f259f] text-xs font-bold text-white">Pe</div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">PhonePe</div>
-                  <div className="text-xs text-muted-foreground">UPI · Cards · Net Banking · Wallets</div>
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-navy-deep">
+                <Smartphone className="h-4 w-4" /> Choose UPI App
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {PAYMENT_METHODS.map((m) => (
+                  <label
+                    key={m.id}
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 bg-background p-3 transition ${
+                      method === m.id ? "border-accent ring-2 ring-accent/20" : "border-border hover:border-accent/50"
+                    }`}
+                  >
+                    <Checkbox checked={method === m.id} onCheckedChange={() => setMethod(m.id)} />
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-md ${m.color} text-xs font-bold text-white`}>{m.short}</div>
+                    <div className="flex-1 text-sm font-medium">{m.label}</div>
+                    {method === m.id && <Check className="h-4 w-4 text-accent" />}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-accent/30 bg-gradient-to-br from-emerald-50 to-amber-50 p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-emerald-800">Step 1 · Pay {inr(total)} to:</div>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-mono text-lg font-bold text-navy-deep">{UPI_ID}</div>
+                  <div className="text-xs text-muted-foreground">{UPI_NAME}</div>
                 </div>
-                <Check className="h-5 w-5 text-accent" />
+                <Button type="button" variant="outline" size="sm" onClick={copyUpi}>
+                  <Copy className="mr-1 h-3.5 w-3.5" /> Copy
+                </Button>
+              </div>
+              <a href={upiLink} className="mt-3 inline-block w-full">
+                <Button type="button" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                  Open UPI App & Pay {inr(total)}
+                </Button>
+              </a>
+              <p className="mt-2 text-[11px] text-muted-foreground">On mobile, this opens your chosen UPI app with the amount pre-filled.</p>
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-navy-deep">Step 2 · Confirm payment</div>
+              <div className="space-y-2">
+                <Label htmlFor="txn">UPI Transaction / Reference ID *</Label>
+                <Input id="txn" required value={txnId} onChange={(e) => setTxnId(e.target.value)} placeholder="e.g. 412345678901" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ss">Payment Screenshot *</Label>
+                <label htmlFor="ss" className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-border bg-background p-4 hover:border-accent">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex-1 text-sm">
+                    {screenshot ? (
+                      <span className="font-medium text-emerald-700">✓ {screenshot.name}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Upload screenshot of successful UPI payment</span>
+                    )}
+                  </div>
+                </label>
+                <input id="ss" type="file" accept="image/*" className="hidden" onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)} />
               </div>
             </div>
 
             <Button type="submit" disabled={loading} size="lg" className="w-full bg-gradient-gold text-gold-foreground shadow-gold hover:opacity-90">
-              {loading ? "Processing…" : `Pay ${inr(total)} with PhonePe`}
+              {loading ? "Submitting…" : `Submit Payment ${inr(total)}`}
             </Button>
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-accent" /> 256-bit SSL · PCI-DSS compliant
+              <ShieldCheck className="h-4 w-4 text-accent" /> Admin verifies within minutes · Access unlocked instantly
             </div>
           </form>
         </div>
@@ -176,7 +258,7 @@ function CheckoutPage() {
           </div>
 
           <div className="mt-5 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-            Your 1-day free trial starts immediately. You will be charged only after the trial ends. Cancel anytime.
+            Pay via any UPI app — PhonePe, GPay, Paytm, BHIM. Upload screenshot and admin will activate your account within minutes.
           </div>
         </aside>
       </div>
