@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Sparkles, Check, ShieldCheck, ArrowLeft, Upload, Copy, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 
 const searchSchema = z.object({
   plan: z.enum(["starter", "professional"]).default("starter"),
