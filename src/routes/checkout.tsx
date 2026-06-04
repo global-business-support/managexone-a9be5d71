@@ -26,7 +26,7 @@ const PLANS: Record<"starter" | "professional", PlanDef> = {
   professional: { name: "Professional", monthly: 5999, features: ["5 Companies", "Up to 100 Employees", "EPFO + ESIC + TDS", "P&L + Balance Sheet"] },
 };
 
-const UPI_ID = "managexone@upi";
+const UPI_ID = "7000738158@ybl";
 const UPI_NAME = "ManageXOne";
 
 const PAYMENT_METHODS = [
