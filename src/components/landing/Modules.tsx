@@ -17,25 +17,37 @@ const modules = [
 
 export function Modules() {
   return (
-    <section id="modules" className="container mx-auto px-4 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <div className="text-xs uppercase tracking-widest text-accent">Powerful Modules</div>
-        <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">Everything Your Business Needs</h2>
-        <p className="mt-4 text-muted-foreground">Compliance, accounting, billing and operations — every module deeply integrated.</p>
-      </div>
-      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-accent/50 hover:shadow-elegant">
-            <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-gold opacity-0 blur-2xl transition-opacity group-hover:opacity-30" />
-            <div className="relative">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-hero text-gold shadow-elegant">
-                <Icon className="h-6 w-6" />
+    <section id="modules" className="relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background py-24">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 0%, oklch(0.85 0.13 85 / 0.25), transparent 40%), radial-gradient(circle at 90% 100%, oklch(0.78 0.11 230 / 0.2), transparent 45%)",
+        }}
+      />
+      <div className="container relative mx-auto px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="text-xs font-semibold uppercase tracking-widest text-gold">Powerful Modules</div>
+          <h2 className="mt-3 font-display text-4xl font-bold text-navy-deep md:text-5xl">Everything Your Business Needs</h2>
+          <p className="mt-4 text-muted-foreground">Compliance, accounting, billing and operations — every module deeply integrated.</p>
+        </div>
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {modules.map(({ icon: Icon, title, desc }) => (
+            <div
+              key={title}
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-white/70 p-6 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:border-gold/60 hover:shadow-elegant"
+            >
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-gold opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-40" />
+              <div className="relative">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-hero text-gold shadow-elegant ring-1 ring-gold/30">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-display text-xl font-semibold text-navy-deep">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
               </div>
-              <h3 className="font-display text-xl font-semibold text-navy-deep">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
