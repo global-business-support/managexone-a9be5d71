@@ -1,20 +1,37 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+
+function BrandLogo() {
+  return (
+    <Link to="/" className="group flex items-center gap-2.5">
+      <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-gradient-hero shadow-elegant ring-1 ring-white/10">
+        <div className="absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(circle at 30% 25%, oklch(0.7 0.16 235 / 0.6), transparent 60%)" }} />
+        <svg viewBox="0 0 32 32" className="relative h-5 w-5" fill="none">
+          <path d="M5 25V7l6 9 5-7 5 7 6-9v18" stroke="url(#mxg)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          <defs>
+            <linearGradient id="mxg" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stopColor="oklch(0.82 0.14 230)" />
+              <stop offset="100%" stopColor="oklch(0.55 0.18 252)" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="leading-tight">
+        <div className="font-display text-lg font-bold tracking-tight text-navy-deep">
+          Manage<span className="text-gradient-gold">X</span>One
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Smart Business Suite</div>
+      </div>
+    </Link>
+  );
+}
 
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-hero shadow-elegant">
-            <Sparkles className="h-5 w-5 text-gold" />
-          </div>
-          <div className="leading-tight">
-            <div className="font-display text-lg font-bold text-navy-deep">ManageXOne</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Smart Business Management</div>
-          </div>
-        </Link>
+        <BrandLogo />
+
         <nav className="hidden items-center gap-8 md:flex">
           <a href="#features" className="text-sm font-medium text-foreground/80 hover:text-foreground">Features</a>
           <a href="#modules" className="text-sm font-medium text-foreground/80 hover:text-foreground">Modules</a>
