@@ -312,6 +312,27 @@ function BillingPage() {
                   <div className="space-y-1.5"><Label>GST %</Label><Input type="number" value={gst} onChange={(e) => setGst(e.target.value)} /></div>
                 </div>
               </Card>
+
+              <Card className="p-5">
+                <h4 className="mb-3 font-display text-base font-bold">Quick Software Billing</h4>
+                <div className="space-y-2">
+                  {quickServices.map((service) => (
+                    <button key={service.description} onClick={() => applyService(service)} className="flex w-full items-center justify-between rounded-md border p-3 text-left text-sm transition-colors hover:bg-muted/40">
+                      <span><span className="font-medium text-navy-deep">{service.description}</span><span className="block text-xs text-muted-foreground">SAC {service.hsn_sac}</span></span>
+                      <span className="font-semibold text-gold">₹{service.rate.toLocaleString("en-IN")}</span>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-5">
+                <h4 className="mb-3 font-display text-base font-bold">Advanced Controls</h4>
+                <div className="grid gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2"><BellRing className="h-4 w-4 text-amber-600" />Payment reminder ready for unpaid invoices</div>
+                  <div className="flex items-center gap-2"><Truck className="h-4 w-4 text-blue-600" />Place-of-supply decides IGST vs CGST/SGST</div>
+                  <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-600" />GSTIN, PAN and state code saved in buyer snapshot</div>
+                </div>
+              </Card>
             </div>
           </div>
         </TabsContent>
@@ -352,6 +373,20 @@ function BillingPage() {
               )}
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="plans">
+          <div className="grid gap-4 md:grid-cols-3">
+            {billingPlans.map((plan) => (
+              <Card key={plan.name} className="p-6">
+                <div className="text-xs font-semibold uppercase tracking-wider text-gold">{plan.module}</div>
+                <h3 className="mt-2 font-display text-xl font-bold text-navy-deep">{plan.name}</h3>
+                <div className="mt-3 text-3xl font-bold">₹{plan.price.toLocaleString("en-IN")}</div>
+                <div className="text-sm text-muted-foreground">{plan.cycle} • {plan.users}</div>
+                <Button className="mt-5 w-full bg-gradient-hero text-white" onClick={() => applyService({ description: `${plan.name} Software Subscription`, hsn_sac: "998314", qty: 1, rate: plan.price })}>Add to Invoice</Button>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </ModulePage>
