@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt, FileText, Plus, Printer, Users, Trash2, Save } from "lucide-react";
+import { Receipt, FileText, Plus, Printer, Users, Trash2, Save, Building2, CreditCard, IndianRupee, BellRing, Truck, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +32,18 @@ interface SavedInvoice {
 
 const sb = supabase as any;
 const COMPANY_STATE_CODE = "27"; // Default seller state code (Maharashtra)
+
+const billingPlans = [
+  { name: "Starter", users: "5 users", price: 4999, cycle: "Monthly", module: "Core Billing" },
+  { name: "Growth", users: "25 users", price: 14999, cycle: "Monthly", module: "Billing + CRM" },
+  { name: "Enterprise", users: "Unlimited", price: 49999, cycle: "Annual", module: "Full Suite" },
+];
+
+const quickServices = [
+  { description: "ManageXOne Software Subscription", hsn_sac: "998314", qty: 1, rate: 14999 },
+  { description: "Implementation & Onboarding", hsn_sac: "998313", qty: 1, rate: 25000 },
+  { description: "Priority Support Retainer", hsn_sac: "998599", qty: 1, rate: 7500 },
+];
 
 function BillingPage() {
   const { user } = useAuth();
@@ -75,10 +87,13 @@ function BillingPage() {
   const sgst = isInterstate ? 0 : taxAmt / 2;
   const igst = isInterstate ? taxAmt : 0;
   const total = subtotal + taxAmt;
+  const outstanding = savedInvoices.filter((inv) => inv.status !== "paid" && inv.status !== "cancelled").reduce((sum, inv) => sum + Number(inv.total), 0);
+  const paidTotal = savedInvoices.filter((inv) => inv.status === "paid").reduce((sum, inv) => sum + Number(inv.total), 0);
 
   const updateItem = (id: string, patch: Partial<LineItem>) => setItems((arr) => arr.map((i) => i.id === id ? { ...i, ...patch } : i));
   const addItem = () => setItems((arr) => [...arr, { id: crypto.randomUUID(), description: "", hsn_sac: "", qty: 1, rate: 0 }]);
   const removeItem = (id: string) => setItems((arr) => arr.length > 1 ? arr.filter((i) => i.id !== id) : arr);
+  const applyService = (service: Omit<LineItem, "id">) => setItems((arr) => [...arr.filter((i) => i.description), { id: crypto.randomUUID(), ...service }]);
 
   const saveParty = async () => {
     if (!user) return toast.error("Login required");
@@ -138,13 +153,21 @@ function BillingPage() {
   return (
     <ModulePage
       title="Billing & GST"
-      description="Advanced GST invoicing — CGST/SGST/IGST auto-split, HSN/SAC, save & print."
+      description="Advanced GST invoicing, buyer company records, software subscription billing, payment tracking and reminders."
       icon={<Receipt className="h-5 w-5" />}
     >
+      <div className="mb-4 grid gap-4 md:grid-cols-4">
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><FileText className="h-4 w-4" />Invoices</div><div className="mt-1 text-2xl font-bold text-navy-deep">{savedInvoices.length}</div></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><IndianRupee className="h-4 w-4" />Outstanding</div><div className="mt-1 text-2xl font-bold text-amber-700">₹{outstanding.toFixed(0)}</div></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="h-4 w-4" />Collected</div><div className="mt-1 text-2xl font-bold text-emerald-700">₹{paidTotal.toFixed(0)}</div></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Building2 className="h-4 w-4" />Buyer Companies</div><div className="mt-1 text-2xl font-bold text-navy-deep">{parties.filter((p) => p.type !== "supplier").length}</div></Card>
+      </div>
+
       <Tabs defaultValue="new">
         <TabsList>
           <TabsTrigger value="new">Create Invoice</TabsTrigger>
           <TabsTrigger value="list">Saved Invoices ({savedInvoices.length})</TabsTrigger>
+          <TabsTrigger value="plans">Software Plans</TabsTrigger>
         </TabsList>
 
         <TabsContent value="new">
@@ -255,7 +278,7 @@ function BillingPage() {
                     <DialogContent className="max-w-lg">
                       <DialogHeader><DialogTitle>Create Party</DialogTitle></DialogHeader>
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="space-y-1.5 sm:col-span-2"><Label>Name *</Label><Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+                        <div className="space-y-1.5 sm:col-span-2"><Label>Company / Buyer Name *</Label><Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Company buying the software" /></div>
                         <div className="space-y-1.5"><Label>Type</Label>
                           <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -264,8 +287,8 @@ function BillingPage() {
                         </div>
                         <div className="space-y-1.5"><Label>GSTIN</Label><Input value={form.gstin ?? ""} onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })} /></div>
                         <div className="space-y-1.5"><Label>PAN</Label><Input value={form.pan ?? ""} onChange={(e) => setForm({ ...form, pan: e.target.value.toUpperCase() })} /></div>
-                        <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-                        <div className="space-y-1.5 sm:col-span-2"><Label>Email</Label><Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+                        <div className="space-y-1.5"><Label>Decision Maker Phone</Label><Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Owner / Accounts contact" /></div>
+                        <div className="space-y-1.5 sm:col-span-2"><Label>Billing Email</Label><Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="accounts@company.com" /></div>
                         <div className="space-y-1.5 sm:col-span-2"><Label>Billing Address</Label><Textarea rows={3} value={form.billing_address ?? ""} onChange={(e) => setForm({ ...form, billing_address: e.target.value })} /></div>
                         <div className="space-y-1.5"><Label>State</Label><Input value={form.state ?? ""} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
                         <div className="space-y-1.5"><Label>State Code</Label><Input value={form.state_code ?? ""} onChange={(e) => setForm({ ...form, state_code: e.target.value })} placeholder="27" /></div>
