@@ -1,25 +1,10 @@
-// Vercel-specific Vite config. Used ONLY by `bun run build:vercel`.
-// This bypasses the Lovable Cloudflare wrapper and targets Vercel's serverless runtime.
-import { defineConfig } from "vite";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
-import path from "node:path";
+// Vercel-specific build config. Lovable preview/publish still uses vite.config.ts.
+// Nitro's Vercel preset writes the required `.vercel/output` deployment files.
+import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+  nitro: { preset: "vercel" },
+  tanstackStart: {
+    server: { entry: "server" },
   },
-  plugins: [
-    tsConfigPaths({ projects: ["./tsconfig.json"] }),
-    tailwindcss(),
-    tanstackStart({
-      target: "vercel",
-      customViteReactPlugin: true,
-    }),
-    viteReact(),
-  ],
 });

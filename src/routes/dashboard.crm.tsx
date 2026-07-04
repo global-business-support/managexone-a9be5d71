@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   FolderKanban, Plus, Search, Building2, Users, TrendingUp, IndianRupee,
   Phone, Mail, Calendar, Target, Filter, Download, MoreVertical, ArrowUpRight,
-  CheckCircle2, Clock, AlertCircle, Sparkles,
+  CheckCircle2, Clock, AlertCircle, Sparkles, UserPlus, MessageSquare, PieChart, MapPin, Star,
 } from "lucide-react";
 import crmBg from "@/assets/crm-bg.jpg";
 
@@ -26,6 +26,15 @@ const pipeline = [
   { stage: "Negotiation", count: 11, value: "₹ 24L", color: "bg-orange-500" },
   { stage: "Won", count: 8, value: "₹ 18L", color: "bg-emerald-500" },
 ];
+
+const leadSources = [
+  { source: "Website Demo", leads: 64, conversion: "31%", color: "bg-emerald-500" },
+  { source: "Referral", leads: 42, conversion: "44%", color: "bg-blue-500" },
+  { source: "Outbound", leads: 55, conversion: "18%", color: "bg-amber-500" },
+  { source: "Partner", leads: 25, conversion: "36%", color: "bg-rose-500" },
+];
+
+const segments = ["All", "Hot", "Active", "Cold"];
 
 const companies = [
   { name: "Acme Industries Pvt Ltd", industry: "Manufacturing", deals: 12, value: "₹ 24.5L", status: "Active", contact: "Rajesh Kumar", phone: "+91 98765 43210", email: "rajesh@acme.in" },
@@ -51,10 +60,12 @@ const statusTone: Record<string, string> = {
 
 function CRMDashboard() {
   const [query, setQuery] = useState("");
+  const [segment, setSegment] = useState("All");
   const filtered = companies.filter(
     (c) =>
-      c.name.toLowerCase().includes(query.toLowerCase()) ||
-      c.industry.toLowerCase().includes(query.toLowerCase()),
+      (segment === "All" || c.status === segment) &&
+      (c.name.toLowerCase().includes(query.toLowerCase()) ||
+        c.industry.toLowerCase().includes(query.toLowerCase())),
   );
 
   return (
@@ -128,6 +139,34 @@ function CRMDashboard() {
         </div>
       </Card>
 
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-6 lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="font-display text-lg font-bold text-navy-deep"><PieChart className="mr-2 inline h-4 w-4" />Lead Source Performance</h3>
+              <p className="text-xs text-muted-foreground">Track where software buyers are coming from</p>
+            </div>
+            <Button variant="outline" size="sm"><Filter className="mr-2 h-4 w-4" />Attribution</Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {leadSources.map((lead) => (
+              <div key={lead.source} className="rounded-lg border p-4">
+                <div className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${lead.color}`} /><span className="font-semibold text-navy-deep">{lead.source}</span></div>
+                <div className="mt-3 flex items-end justify-between"><span className="text-2xl font-bold">{lead.leads}</span><span className="text-sm font-semibold text-emerald-700">{lead.conversion} conversion</span></div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="p-6">
+          <h3 className="font-display text-lg font-bold text-navy-deep"><UserPlus className="mr-2 inline h-4 w-4" />Quick Actions</h3>
+          <div className="mt-4 grid gap-2">
+            {[{ icon: Phone, text: "Schedule demo call" }, { icon: Mail, text: "Send proposal" }, { icon: MessageSquare, text: "WhatsApp follow-up" }, { icon: MapPin, text: "Assign territory" }].map((action) => (
+              <Button key={action.text} variant="outline" className="justify-start"><action.icon className="mr-2 h-4 w-4" />{action.text}</Button>
+            ))}
+          </div>
+        </Card>
+      </div>
+
       {/* Companies + Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="p-6 lg:col-span-2">
@@ -136,9 +175,14 @@ function CRMDashboard() {
               <h3 className="font-display text-lg font-bold text-navy-deep">Companies</h3>
               <p className="text-xs text-muted-foreground">{filtered.length} of {companies.length} shown</p>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search company or industry…" className="w-64 pl-9" />
+            <div className="flex flex-wrap gap-2">
+              <div className="flex rounded-md border bg-muted/30 p-1">
+                {segments.map((s) => <button key={s} onClick={() => setSegment(s)} className={`rounded px-3 py-1 text-xs font-semibold ${segment === s ? "bg-white text-navy-deep shadow-sm" : "text-muted-foreground"}`}>{s}</button>)}
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search company or industry…" className="w-64 pl-9" />
+              </div>
             </div>
           </div>
           <div className="overflow-hidden rounded-xl border">
@@ -158,7 +202,7 @@ function CRMDashboard() {
                   <tr key={c.name} className="border-t transition-colors hover:bg-muted/30">
                     <td className="p-3">
                       <div className="font-semibold text-navy-deep">{c.name}</div>
-                      <div className="text-xs text-muted-foreground">{c.industry}</div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground"><Star className="h-3 w-3 text-gold" />{c.industry}</div>
                     </td>
                     <td className="p-3">
                       <div className="font-medium">{c.contact}</div>
