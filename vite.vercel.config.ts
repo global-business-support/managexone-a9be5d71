@@ -9,6 +9,7 @@ import path from "node:path";
 
 export default defineConfig({
   resolve: {
+    dedupe: ["react", "react-dom", "@tanstack/react-router", "@tanstack/react-query"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
@@ -17,7 +18,7 @@ export default defineConfig({
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     tanstackStart({
-      target: "vercel",
+      server: { preset: "vercel", entry: "src/server.ts" },
       customViteReactPlugin: true,
     }),
     viteReact(),
