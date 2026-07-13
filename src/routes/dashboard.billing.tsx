@@ -477,6 +477,26 @@ function BillingPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={openSeller} onOpenChange={setOpenSeller}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Your Company Details (From / Seller)</DialogTitle></DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2"><Label>Company Name *</Label><Input value={seller.seller_name ?? ""} onChange={(e) => setSeller({ ...seller, seller_name: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>GSTIN</Label><Input value={seller.seller_gstin ?? ""} onChange={(e) => setSeller({ ...seller, seller_gstin: e.target.value.toUpperCase() })} /></div>
+            <div className="space-y-1.5"><Label>PAN</Label><Input value={seller.seller_pan ?? ""} onChange={(e) => setSeller({ ...seller, seller_pan: e.target.value.toUpperCase() })} /></div>
+            <div className="space-y-1.5"><Label>Phone</Label><Input value={seller.seller_phone ?? ""} onChange={(e) => setSeller({ ...seller, seller_phone: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={seller.seller_email ?? ""} onChange={(e) => setSeller({ ...seller, seller_email: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Address</Label><Textarea rows={3} value={seller.seller_address ?? ""} onChange={(e) => setSeller({ ...seller, seller_address: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>State</Label><Input value={seller.seller_state ?? ""} onChange={(e) => setSeller({ ...seller, seller_state: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>State Code</Label><Input value={seller.seller_state_code ?? ""} onChange={(e) => setSeller({ ...seller, seller_state_code: e.target.value })} placeholder="27" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenSeller(false)}>Cancel</Button>
+            <Button onClick={saveSeller} disabled={savingSeller} className="bg-gradient-hero text-white">{savingSeller ? "Saving..." : "Save Company"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ModulePage>
   );
 }
