@@ -398,29 +398,64 @@ function BillingPage() {
                 <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">No invoices saved yet.</div>
               ) : (
                 <Table>
-                  <TableHeader><TableRow><TableHead>Invoice #</TableHead><TableHead>Date</TableHead><TableHead>Party</TableHead><TableHead className="text-right">Subtotal</TableHead><TableHead className="text-right">GST</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>Invoice #</TableHead><TableHead>Date</TableHead><TableHead>Party</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Share</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {savedInvoices.map((inv) => (
-                      <TableRow key={inv.id}>
-                        <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
-                        <TableCell>{inv.invoice_date}</TableCell>
-                        <TableCell>{inv.party_snapshot?.name ?? "—"}</TableCell>
-                        <TableCell className="text-right">₹{Number(inv.subtotal).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">₹{(Number(inv.cgst) + Number(inv.sgst) + Number(inv.igst)).toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Select value={inv.status} onValueChange={(v) => updateStatus(inv.id, v)}>
-                            <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="draft">Draft</SelectItem>
-                              <SelectItem value="sent">Sent</SelectItem>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {savedInvoices.map((inv) => {
+                      const partySnap = inv.party_snapshot ?? {};
+                      const buyerPhone = (partySnap.phone ?? "").replace(/\D/g, "");
+                      const buyerEmail = partySnap.email ?? "";
+                      const message = `Hello ${partySnap.name ?? ""},%0A%0AInvoice #${inv.invoice_no} dated ${inv.invoice_date} for ₹${Number(inv.total).toFixed(2)} is ready.%0A%0AFrom: ${seller.seller_name ?? "Your Company"}%0A${seller.seller_gstin ? "GSTIN: " + seller.seller_gstin + "%0A" : ""}${seller.seller_phone ? "☎ " + seller.seller_phone : ""}%0A%0AThank you for your business.`;
+                      const waLink = buyerPhone ? `https://wa.me/${buyerPhone.length === 10 ? "91" + buyerPhone : buyerPhone}?text=${message}` : "";
+                      const mailSubject = encodeURIComponent(`Invoice ${inv.invoice_no} from ${seller.seller_name ?? "us"}`);
+                      const mailBody = encodeURIComponent(decodeURIComponent(message.replace(/%0A/g, "\n")));
+                      const mailLink = buyerEmail ? `mailto:${buyerEmail}?subject=${mailSubject}&body=${mailBody}` : "";
+                      const markShared = async (col: "share_email_sent_at" | "share_whatsapp_sent_at") => {
+                        await sb.from("invoices").update({ [col]: new Date().toISOString() }).eq("id", inv.id);
+                      };
+                      return (
+                        <TableRow key={inv.id}>
+                          <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
+                          <TableCell>{inv.invoice_date}</TableCell>
+                          <TableCell>{partySnap?.name ?? "—"}</TableCell>
+                          <TableCell className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Select value={inv.status} onValueChange={(v) => updateStatus(inv.id, v)}>
+                              <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="sent">Sent</SelectItem>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!waLink}
+                                onClick={() => { window.open(waLink, "_blank"); markShared("share_whatsapp_sent_at"); }}
+                                className="h-7 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                title={waLink ? "Share on WhatsApp" : "No buyer phone saved"}
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!mailLink}
+                                onClick={() => { window.location.href = mailLink; markShared("share_email_sent_at"); }}
+                                className="h-7"
+                                title={mailLink ? "Email invoice" : "No buyer email saved"}
+                              >
+                                <Mail className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
