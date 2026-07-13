@@ -139,6 +139,7 @@ function AllUsersPage() {
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Company</th>
                 <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Ref</th>
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Active</th>
