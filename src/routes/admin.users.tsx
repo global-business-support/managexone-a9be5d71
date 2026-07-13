@@ -24,6 +24,7 @@ interface UserRow {
   payment_status: string;
   trial_expires_at: string;
   created_at: string;
+  referred_by: string | null;
   role: "admin" | "member" | "trial" | null;
 }
 
