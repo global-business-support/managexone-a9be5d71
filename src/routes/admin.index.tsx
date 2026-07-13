@@ -17,11 +17,14 @@ interface Stats {
   payments: number;
   revenue: number;
   pendingPayments: number;
+  today: number;
+  week: number;
+  referred: number;
 }
 
 function AdminOverview() {
-  const [s, setS] = useState<Stats>({ total: 0, approved: 0, pending: 0, paidPending: 0, suspended: 0, payments: 0, revenue: 0, pendingPayments: 0 });
-  const [recent, setRecent] = useState<Array<{ user_id: string; email: string; full_name: string | null; company_name: string | null; approved: boolean; active: boolean; payment_status: string; created_at: string }>>([]);
+  const [s, setS] = useState<Stats>({ total: 0, approved: 0, pending: 0, paidPending: 0, suspended: 0, payments: 0, revenue: 0, pendingPayments: 0, today: 0, week: 0, referred: 0 });
+  const [recent, setRecent] = useState<Array<{ user_id: string; email: string; full_name: string | null; company_name: string | null; approved: boolean; active: boolean; payment_status: string; created_at: string; referred_by: string | null }>>([]);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +35,8 @@ function AdminOverview() {
       const list = profiles ?? [];
       const paid = (pays ?? []).filter((p: { status: string }) => p.status === "paid");
       const pendingPays = (pays ?? []).filter((p: { status: string }) => p.status === "pending");
+      const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       setS({
         total: list.length,
         approved: list.filter((p) => p.approved).length,
@@ -41,6 +46,9 @@ function AdminOverview() {
         payments: paid.length,
         revenue: paid.reduce((a: number, b: { amount: number }) => a + Number(b.amount ?? 0), 0),
         pendingPayments: pendingPays.length,
+        today: list.filter((p) => new Date(p.created_at) >= startOfToday).length,
+        week: list.filter((p) => new Date(p.created_at) >= weekAgo).length,
+        referred: list.filter((p) => p.referred_by).length,
       });
       setRecent(list.slice(0, 8));
     })();
@@ -61,7 +69,10 @@ function AdminOverview() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Signups Today" value={s.today} color="text-emerald-700" highlight />
+        <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Signups (7 days)" value={s.week} color="text-navy-deep" />
         <StatCard icon={<Users className="h-5 w-5" />} label="Total Customers" value={s.total} color="text-navy-deep" />
+        <StatCard icon={<Users className="h-5 w-5" />} label="Via Referral" value={s.referred} color="text-navy-deep" />
         <StatCard icon={<CheckCircle2 className="h-5 w-5" />} label="Approved Members" value={s.approved} color="text-emerald-700" />
         <StatCard icon={<Clock className="h-5 w-5" />} label="Pending Approval" value={s.pending} color="text-amber-700" />
         <StatCard icon={<Power className="h-5 w-5" />} label="Suspended" value={s.suspended} color="text-rose-700" />
