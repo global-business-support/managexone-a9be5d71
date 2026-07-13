@@ -31,7 +31,18 @@ interface SavedInvoice {
 }
 
 const sb = supabase as any;
-const COMPANY_STATE_CODE = "27"; // Default seller state code (Maharashtra)
+const DEFAULT_STATE_CODE = "27"; // Fallback seller state code
+
+interface SellerProfile {
+  seller_name: string | null;
+  seller_gstin: string | null;
+  seller_pan: string | null;
+  seller_address: string | null;
+  seller_state: string | null;
+  seller_state_code: string | null;
+  seller_phone: string | null;
+  seller_email: string | null;
+}
 
 const billingPlans = [
   { name: "Starter", users: "5 users", price: 4999, cycle: "Monthly", module: "Core Billing" },
