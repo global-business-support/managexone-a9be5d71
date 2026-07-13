@@ -110,6 +110,7 @@ function AdminOverview() {
             <tr>
               <th className="px-4 py-2">User</th>
               <th className="px-4 py-2">Company</th>
+              <th className="px-4 py-2">Ref</th>
               <th className="px-4 py-2">Payment</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Joined</th>
@@ -123,6 +124,9 @@ function AdminOverview() {
                   <div className="text-xs text-muted-foreground">{u.email}</div>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{u.company_name ?? "—"}</td>
+                <td className="px-4 py-3">
+                  {u.referred_by ? <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs text-blue-800">{u.referred_by}</span> : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
                 <td className="px-4 py-3 capitalize">
                   <span className={u.payment_status === "paid" ? "text-emerald-700" : "text-muted-foreground"}>
                     {u.payment_status}
@@ -137,7 +141,7 @@ function AdminOverview() {
               </tr>
             ))}
             {recent.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No signups yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No signups yet.</td></tr>
             )}
           </tbody>
         </table>
