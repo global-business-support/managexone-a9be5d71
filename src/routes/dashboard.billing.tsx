@@ -230,8 +230,19 @@ function BillingPage() {
                 <div className="flex items-start justify-between border-b pb-4">
                   <div>
                     <div className="text-xs uppercase tracking-widest text-gold">Tax Invoice</div>
-                    <div className="font-display text-2xl font-bold text-navy-deep">ManageXOne</div>
-                    <div className="text-xs text-muted-foreground">Smart Business Management</div>
+                    <div className="font-display text-2xl font-bold text-navy-deep">{seller.seller_name || "Your Company"}</div>
+                    {seller.seller_address && <div className="mt-1 whitespace-pre-line text-xs text-muted-foreground max-w-xs">{seller.seller_address}</div>}
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {seller.seller_gstin && <span className="mr-3">GSTIN: <b className="text-foreground">{seller.seller_gstin}</b></span>}
+                      {seller.seller_pan && <span className="mr-3">PAN: {seller.seller_pan}</span>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {seller.seller_phone && <span className="mr-3">☎ {seller.seller_phone}</span>}
+                      {seller.seller_email && <span>✉ {seller.seller_email}</span>}
+                    </div>
+                    <button onClick={() => setOpenSeller(true)} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-navy-deep hover:underline print:hidden">
+                      <Pencil className="h-3 w-3" /> Edit Company Details (From)
+                    </button>
                   </div>
                   <div className="text-right text-sm">
                     <div><span className="text-muted-foreground">Invoice #</span> <b>{invoiceNo}</b></div>
