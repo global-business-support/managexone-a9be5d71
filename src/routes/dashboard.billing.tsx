@@ -71,25 +71,56 @@ function BillingPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [form, setForm] = useState<Partial<Party>>({ type: "customer" });
   const [saving, setSaving] = useState(false);
+  const [seller, setSeller] = useState<SellerProfile>({
+    seller_name: null, seller_gstin: null, seller_pan: null, seller_address: null,
+    seller_state: null, seller_state_code: null, seller_phone: null, seller_email: null,
+  });
+  const [openSeller, setOpenSeller] = useState(false);
+  const [savingSeller, setSavingSeller] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const [p, inv] = await Promise.all([
+    const [p, inv, prof] = await Promise.all([
       sb.from("parties").select("*").order("created_at", { ascending: false }),
       sb.from("invoices").select("*").order("invoice_date", { ascending: false }),
+      sb.from("profiles").select("seller_name,seller_gstin,seller_pan,seller_address,seller_state,seller_state_code,seller_phone,seller_email,company_name,email,phone").eq("user_id", user.id).maybeSingle(),
     ]);
     if (p.error) toast.error(p.error.message); else setParties(p.data ?? []);
     if (!inv.error) setSavedInvoices(inv.data ?? []);
+    if (prof.data) {
+      const d = prof.data as any;
+      setSeller({
+        seller_name: d.seller_name ?? d.company_name ?? "ManageXOne",
+        seller_gstin: d.seller_gstin,
+        seller_pan: d.seller_pan,
+        seller_address: d.seller_address,
+        seller_state: d.seller_state,
+        seller_state_code: d.seller_state_code,
+        seller_phone: d.seller_phone ?? d.phone,
+        seller_email: d.seller_email ?? d.email,
+      });
+    }
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
+  const saveSeller = async () => {
+    if (!user) return;
+    setSavingSeller(true);
+    const { error } = await sb.from("profiles").update(seller).eq("user_id", user.id);
+    setSavingSeller(false);
+    if (error) return toast.error(error.message);
+    toast.success("Company profile saved");
+    setOpenSeller(false);
+  };
+
   const selectedParty = useMemo(() => parties.find((p) => p.id === selectedPartyId) ?? null, [parties, selectedPartyId]);
 
+  const sellerStateCode = seller.seller_state_code || DEFAULT_STATE_CODE;
   const isInterstate = useMemo(() => {
     if (!selectedParty?.state_code) return false;
-    return selectedParty.state_code !== COMPANY_STATE_CODE;
-  }, [selectedParty]);
+    return selectedParty.state_code !== sellerStateCode;
+  }, [selectedParty, sellerStateCode]);
 
   const subtotal = items.reduce((s, i) => s + i.qty * i.rate, 0);
   const gstPct = parseFloat(gst) || 0;
