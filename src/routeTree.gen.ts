@@ -34,6 +34,7 @@ import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing
 import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardAccountingRouteImport } from './routes/dashboard.accounting'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
 import { Route as AdminPendingRouteImport } from './routes/admin.pending'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
@@ -163,6 +164,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReferralsRoute = AdminReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPendingRoute = AdminPendingRouteImport.update({
   id: '/pending',
   path: '/pending',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pending': typeof AdminPendingRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pending': typeof AdminPendingRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pending': typeof AdminPendingRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/users': typeof AdminUsersRoute
   '/dashboard/accounting': typeof DashboardAccountingRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/payments'
     | '/admin/pending'
+    | '/admin/referrals'
     | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/payments'
     | '/admin/pending'
+    | '/admin/referrals'
     | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/payments'
     | '/admin/pending'
+    | '/admin/referrals'
     | '/admin/users'
     | '/dashboard/accounting'
     | '/dashboard/admin'
@@ -552,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/referrals': {
+      id: '/admin/referrals'
+      path: '/referrals'
+      fullPath: '/admin/referrals'
+      preLoaderRoute: typeof AdminReferralsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pending': {
       id: '/admin/pending'
       path: '/pending'
@@ -579,6 +598,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminPendingRoute: typeof AdminPendingRoute
+  AdminReferralsRoute: typeof AdminReferralsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -586,6 +606,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminPendingRoute: AdminPendingRoute,
+  AdminReferralsRoute: AdminReferralsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

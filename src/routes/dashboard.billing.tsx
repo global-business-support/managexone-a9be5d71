@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt, FileText, Plus, Printer, Users, Trash2, Save, Building2, CreditCard, IndianRupee, BellRing, Truck, ShieldCheck } from "lucide-react";
+import { Receipt, FileText, Plus, Printer, Users, Trash2, Save, Building2, CreditCard, IndianRupee, BellRing, Truck, ShieldCheck, MessageCircle, Mail, Pencil } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +31,18 @@ interface SavedInvoice {
 }
 
 const sb = supabase as any;
-const COMPANY_STATE_CODE = "27"; // Default seller state code (Maharashtra)
+const DEFAULT_STATE_CODE = "27"; // Fallback seller state code
+
+interface SellerProfile {
+  seller_name: string | null;
+  seller_gstin: string | null;
+  seller_pan: string | null;
+  seller_address: string | null;
+  seller_state: string | null;
+  seller_state_code: string | null;
+  seller_phone: string | null;
+  seller_email: string | null;
+}
 
 const billingPlans = [
   { name: "Starter", users: "5 users", price: 4999, cycle: "Monthly", module: "Core Billing" },
@@ -60,25 +71,56 @@ function BillingPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [form, setForm] = useState<Partial<Party>>({ type: "customer" });
   const [saving, setSaving] = useState(false);
+  const [seller, setSeller] = useState<SellerProfile>({
+    seller_name: null, seller_gstin: null, seller_pan: null, seller_address: null,
+    seller_state: null, seller_state_code: null, seller_phone: null, seller_email: null,
+  });
+  const [openSeller, setOpenSeller] = useState(false);
+  const [savingSeller, setSavingSeller] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const [p, inv] = await Promise.all([
+    const [p, inv, prof] = await Promise.all([
       sb.from("parties").select("*").order("created_at", { ascending: false }),
       sb.from("invoices").select("*").order("invoice_date", { ascending: false }),
+      sb.from("profiles").select("seller_name,seller_gstin,seller_pan,seller_address,seller_state,seller_state_code,seller_phone,seller_email,company_name,email,phone").eq("user_id", user.id).maybeSingle(),
     ]);
     if (p.error) toast.error(p.error.message); else setParties(p.data ?? []);
     if (!inv.error) setSavedInvoices(inv.data ?? []);
+    if (prof.data) {
+      const d = prof.data as any;
+      setSeller({
+        seller_name: d.seller_name ?? d.company_name ?? "ManageXOne",
+        seller_gstin: d.seller_gstin,
+        seller_pan: d.seller_pan,
+        seller_address: d.seller_address,
+        seller_state: d.seller_state,
+        seller_state_code: d.seller_state_code,
+        seller_phone: d.seller_phone ?? d.phone,
+        seller_email: d.seller_email ?? d.email,
+      });
+    }
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
+  const saveSeller = async () => {
+    if (!user) return;
+    setSavingSeller(true);
+    const { error } = await sb.from("profiles").update(seller).eq("user_id", user.id);
+    setSavingSeller(false);
+    if (error) return toast.error(error.message);
+    toast.success("Company profile saved");
+    setOpenSeller(false);
+  };
+
   const selectedParty = useMemo(() => parties.find((p) => p.id === selectedPartyId) ?? null, [parties, selectedPartyId]);
 
+  const sellerStateCode = seller.seller_state_code || DEFAULT_STATE_CODE;
   const isInterstate = useMemo(() => {
     if (!selectedParty?.state_code) return false;
-    return selectedParty.state_code !== COMPANY_STATE_CODE;
-  }, [selectedParty]);
+    return selectedParty.state_code !== sellerStateCode;
+  }, [selectedParty, sellerStateCode]);
 
   const subtotal = items.reduce((s, i) => s + i.qty * i.rate, 0);
   const gstPct = parseFloat(gst) || 0;
@@ -188,8 +230,19 @@ function BillingPage() {
                 <div className="flex items-start justify-between border-b pb-4">
                   <div>
                     <div className="text-xs uppercase tracking-widest text-gold">Tax Invoice</div>
-                    <div className="font-display text-2xl font-bold text-navy-deep">ManageXOne</div>
-                    <div className="text-xs text-muted-foreground">Smart Business Management</div>
+                    <div className="font-display text-2xl font-bold text-navy-deep">{seller.seller_name || "Your Company"}</div>
+                    {seller.seller_address && <div className="mt-1 whitespace-pre-line text-xs text-muted-foreground max-w-xs">{seller.seller_address}</div>}
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {seller.seller_gstin && <span className="mr-3">GSTIN: <b className="text-foreground">{seller.seller_gstin}</b></span>}
+                      {seller.seller_pan && <span className="mr-3">PAN: {seller.seller_pan}</span>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {seller.seller_phone && <span className="mr-3">☎ {seller.seller_phone}</span>}
+                      {seller.seller_email && <span>✉ {seller.seller_email}</span>}
+                    </div>
+                    <button onClick={() => setOpenSeller(true)} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-navy-deep hover:underline print:hidden">
+                      <Pencil className="h-3 w-3" /> Edit Company Details (From)
+                    </button>
                   </div>
                   <div className="text-right text-sm">
                     <div><span className="text-muted-foreground">Invoice #</span> <b>{invoiceNo}</b></div>
@@ -345,29 +398,64 @@ function BillingPage() {
                 <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">No invoices saved yet.</div>
               ) : (
                 <Table>
-                  <TableHeader><TableRow><TableHead>Invoice #</TableHead><TableHead>Date</TableHead><TableHead>Party</TableHead><TableHead className="text-right">Subtotal</TableHead><TableHead className="text-right">GST</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>Invoice #</TableHead><TableHead>Date</TableHead><TableHead>Party</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Share</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {savedInvoices.map((inv) => (
-                      <TableRow key={inv.id}>
-                        <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
-                        <TableCell>{inv.invoice_date}</TableCell>
-                        <TableCell>{inv.party_snapshot?.name ?? "—"}</TableCell>
-                        <TableCell className="text-right">₹{Number(inv.subtotal).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">₹{(Number(inv.cgst) + Number(inv.sgst) + Number(inv.igst)).toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Select value={inv.status} onValueChange={(v) => updateStatus(inv.id, v)}>
-                            <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="draft">Draft</SelectItem>
-                              <SelectItem value="sent">Sent</SelectItem>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {savedInvoices.map((inv) => {
+                      const partySnap = inv.party_snapshot ?? {};
+                      const buyerPhone = (partySnap.phone ?? "").replace(/\D/g, "");
+                      const buyerEmail = partySnap.email ?? "";
+                      const message = `Hello ${partySnap.name ?? ""},%0A%0AInvoice #${inv.invoice_no} dated ${inv.invoice_date} for ₹${Number(inv.total).toFixed(2)} is ready.%0A%0AFrom: ${seller.seller_name ?? "Your Company"}%0A${seller.seller_gstin ? "GSTIN: " + seller.seller_gstin + "%0A" : ""}${seller.seller_phone ? "☎ " + seller.seller_phone : ""}%0A%0AThank you for your business.`;
+                      const waLink = buyerPhone ? `https://wa.me/${buyerPhone.length === 10 ? "91" + buyerPhone : buyerPhone}?text=${message}` : "";
+                      const mailSubject = encodeURIComponent(`Invoice ${inv.invoice_no} from ${seller.seller_name ?? "us"}`);
+                      const mailBody = encodeURIComponent(decodeURIComponent(message.replace(/%0A/g, "\n")));
+                      const mailLink = buyerEmail ? `mailto:${buyerEmail}?subject=${mailSubject}&body=${mailBody}` : "";
+                      const markShared = async (col: "share_email_sent_at" | "share_whatsapp_sent_at") => {
+                        await sb.from("invoices").update({ [col]: new Date().toISOString() }).eq("id", inv.id);
+                      };
+                      return (
+                        <TableRow key={inv.id}>
+                          <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
+                          <TableCell>{inv.invoice_date}</TableCell>
+                          <TableCell>{partySnap?.name ?? "—"}</TableCell>
+                          <TableCell className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Select value={inv.status} onValueChange={(v) => updateStatus(inv.id, v)}>
+                              <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="sent">Sent</SelectItem>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!waLink}
+                                onClick={() => { window.open(waLink, "_blank"); markShared("share_whatsapp_sent_at"); }}
+                                className="h-7 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                title={waLink ? "Share on WhatsApp" : "No buyer phone saved"}
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!mailLink}
+                                onClick={() => { window.location.href = mailLink; markShared("share_email_sent_at"); }}
+                                className="h-7"
+                                title={mailLink ? "Email invoice" : "No buyer email saved"}
+                              >
+                                <Mail className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
@@ -389,6 +477,26 @@ function BillingPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={openSeller} onOpenChange={setOpenSeller}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Your Company Details (From / Seller)</DialogTitle></DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2"><Label>Company Name *</Label><Input value={seller.seller_name ?? ""} onChange={(e) => setSeller({ ...seller, seller_name: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>GSTIN</Label><Input value={seller.seller_gstin ?? ""} onChange={(e) => setSeller({ ...seller, seller_gstin: e.target.value.toUpperCase() })} /></div>
+            <div className="space-y-1.5"><Label>PAN</Label><Input value={seller.seller_pan ?? ""} onChange={(e) => setSeller({ ...seller, seller_pan: e.target.value.toUpperCase() })} /></div>
+            <div className="space-y-1.5"><Label>Phone</Label><Input value={seller.seller_phone ?? ""} onChange={(e) => setSeller({ ...seller, seller_phone: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={seller.seller_email ?? ""} onChange={(e) => setSeller({ ...seller, seller_email: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Address</Label><Textarea rows={3} value={seller.seller_address ?? ""} onChange={(e) => setSeller({ ...seller, seller_address: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>State</Label><Input value={seller.seller_state ?? ""} onChange={(e) => setSeller({ ...seller, seller_state: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>State Code</Label><Input value={seller.seller_state_code ?? ""} onChange={(e) => setSeller({ ...seller, seller_state_code: e.target.value })} placeholder="27" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenSeller(false)}>Cancel</Button>
+            <Button onClick={saveSeller} disabled={savingSeller} className="bg-gradient-hero text-white">{savingSeller ? "Saving..." : "Save Company"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ModulePage>
   );
 }

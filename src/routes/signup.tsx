@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,22 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Sparkles, Check } from "lucide-react";
 
+interface SignupSearch {
+  ref?: string;
+}
+
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Start Free Trial — ManageXOne" }] }),
+  validateSearch: (search: Record<string, unknown>): SignupSearch => ({
+    ref: typeof search.ref === "string" ? search.ref : undefined,
+  }),
   component: SignupPage,
 });
 
 function SignupPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/signup" });
+  const refCode = (search.ref ?? "").toUpperCase();
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
@@ -28,12 +37,16 @@ function SignupPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name, company_name: company },
+        data: {
+          full_name: name,
+          company_name: company,
+          ...(refCode ? { referred_by: refCode } : {}),
+        },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created! Signing you in…");
+    toast.success("Trial account created! Signing you in…");
     // Try immediate sign-in so user lands in dashboard right away
     const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
     if (signInErr) navigate({ to: "/login" });
@@ -46,7 +59,12 @@ function SignupPage() {
         <form onSubmit={onSubmit} className="w-full max-w-md space-y-5">
           <div>
             <h1 className="font-display text-3xl font-bold text-navy-deep">Start Your 1-Day Free Trial</h1>
-            <p className="mt-1 text-sm text-muted-foreground">No credit card required.</p>
+            <p className="mt-1 text-sm text-muted-foreground">No credit card required. Trial gives limited access — full access after admin approval.</p>
+            {refCode && (
+              <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                Referred by code <b className="font-mono">{refCode}</b>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>

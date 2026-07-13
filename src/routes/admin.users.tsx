@@ -24,6 +24,7 @@ interface UserRow {
   payment_status: string;
   trial_expires_at: string;
   created_at: string;
+  referred_by: string | null;
   role: "admin" | "member" | "trial" | null;
 }
 
@@ -138,6 +139,7 @@ function AllUsersPage() {
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Company</th>
                 <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Ref</th>
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Active</th>
@@ -158,6 +160,9 @@ function AllUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">{u.role ?? "—"}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.referred_by ? <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs text-blue-800">{u.referred_by}</span> : <span className="text-xs text-muted-foreground">—</span>}
                   </td>
                   <td className="px-4 py-3 capitalize">
                     <span className={u.payment_status === "paid" ? "font-semibold text-emerald-700" : "text-muted-foreground"}>
@@ -214,7 +219,7 @@ function AllUsersPage() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">No users match.</td></tr>
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">No users match.</td></tr>
               )}
             </tbody>
           </table>

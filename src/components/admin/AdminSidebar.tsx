@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { ShieldCheck, LayoutDashboard, Users, Clock, CreditCard, LogOut, ArrowLeftRight } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Users, Clock, CreditCard, LogOut, ArrowLeftRight, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ const NAV = [
   { to: "/admin/pending", label: "Pending Approvals", icon: Clock },
   { to: "/admin/users", label: "All Users", icon: Users },
   { to: "/admin/payments", label: "Payments", icon: CreditCard },
+  { to: "/admin/referrals", label: "Referrals", icon: Share2 },
 ];
 
 export function AdminSidebar() {
