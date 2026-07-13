@@ -268,6 +268,8 @@ export type Database = {
           party_id: string | null
           party_snapshot: Json | null
           sgst: number
+          share_email_sent_at: string | null
+          share_whatsapp_sent_at: string | null
           status: string
           subtotal: number
           total: number
@@ -288,6 +290,8 @@ export type Database = {
           party_id?: string | null
           party_snapshot?: Json | null
           sgst?: number
+          share_email_sent_at?: string | null
+          share_whatsapp_sent_at?: string | null
           status?: string
           subtotal?: number
           total?: number
@@ -308,6 +312,8 @@ export type Database = {
           party_id?: string | null
           party_snapshot?: Json | null
           sgst?: number
+          share_email_sent_at?: string | null
+          share_whatsapp_sent_at?: string | null
           status?: string
           subtotal?: number
           total?: number
@@ -588,6 +594,16 @@ export type Database = {
           id: string
           payment_status: string
           phone: string | null
+          referred_by: string | null
+          seller_address: string | null
+          seller_email: string | null
+          seller_gstin: string | null
+          seller_logo_url: string | null
+          seller_name: string | null
+          seller_pan: string | null
+          seller_phone: string | null
+          seller_state: string | null
+          seller_state_code: string | null
           trial_expires_at: string
           updated_at: string
           user_id: string
@@ -602,6 +618,16 @@ export type Database = {
           id?: string
           payment_status?: string
           phone?: string | null
+          referred_by?: string | null
+          seller_address?: string | null
+          seller_email?: string | null
+          seller_gstin?: string | null
+          seller_logo_url?: string | null
+          seller_name?: string | null
+          seller_pan?: string | null
+          seller_phone?: string | null
+          seller_state?: string | null
+          seller_state_code?: string | null
           trial_expires_at?: string
           updated_at?: string
           user_id: string
@@ -616,9 +642,52 @@ export type Database = {
           id?: string
           payment_status?: string
           phone?: string | null
+          referred_by?: string | null
+          seller_address?: string | null
+          seller_email?: string | null
+          seller_gstin?: string | null
+          seller_logo_url?: string | null
+          seller_name?: string | null
+          seller_pan?: string | null
+          seller_phone?: string | null
+          seller_state?: string | null
+          seller_state_code?: string | null
           trial_expires_at?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string | null
+          employee_name: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by?: string | null
+          employee_name: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          employee_name?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
