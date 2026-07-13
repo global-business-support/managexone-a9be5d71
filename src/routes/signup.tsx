@@ -59,7 +59,12 @@ function SignupPage() {
         <form onSubmit={onSubmit} className="w-full max-w-md space-y-5">
           <div>
             <h1 className="font-display text-3xl font-bold text-navy-deep">Start Your 1-Day Free Trial</h1>
-            <p className="mt-1 text-sm text-muted-foreground">No credit card required.</p>
+            <p className="mt-1 text-sm text-muted-foreground">No credit card required. Trial gives limited access — full access after admin approval.</p>
+            {refCode && (
+              <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                Referred by code <b className="font-mono">{refCode}</b>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
