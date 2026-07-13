@@ -161,6 +161,9 @@ function AllUsersPage() {
                   <td className="px-4 py-3">
                     <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">{u.role ?? "—"}</Badge>
                   </td>
+                  <td className="px-4 py-3">
+                    {u.referred_by ? <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs text-blue-800">{u.referred_by}</span> : <span className="text-xs text-muted-foreground">—</span>}
+                  </td>
                   <td className="px-4 py-3 capitalize">
                     <span className={u.payment_status === "paid" ? "font-semibold text-emerald-700" : "text-muted-foreground"}>
                       {u.payment_status}
